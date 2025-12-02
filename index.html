@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Homepage</title>
+    <style>
+      .timetables {
+        margin-left: 20px;
+      }
+    </style>
   </head>
   <body>
     <!-- React will render its content inside this div -->
@@ -48,9 +53,17 @@
             null,
             `臺北捷運 ${StationName}站往${DestinationStationName}站時刻表`
           ),
-          React.createElement("p", null, `路線：${stationTimeTable.RouteID}`),
-          React.createElement("p", null, `起站：${StationName}`),
-          React.createElement("p", null, `迄站：${DestinationStationName}`),
+          React.createElement(
+            "ul",
+            null,
+            React.createElement(
+              "li",
+              null,
+              `路線：${stationTimeTable.RouteID}`
+            ),
+            React.createElement("li", null, `起站：${StationName}`),
+            React.createElement("li", null, `迄站：${DestinationStationName}`)
+          ),
           React.createElement(TimetableSpan, {
             serviceTag: stationTimeTable.ServiceDay.ServiceTag,
             timetables: stationTimeTable.Timetables,
@@ -96,11 +109,15 @@
           "div",
           null,
           React.createElement("h3", null, serviceTag),
-          Object.entries(groupedByHour).map(([hour, times]) =>
-            React.createElement(
-              "p",
-              null,
-              times.map((time, index) => `${time} `)
+          React.createElement(
+            "div",
+            { className: "timetables" },
+            Object.entries(groupedByHour).map(([hour, times]) =>
+              React.createElement(
+                "p",
+                null,
+                times.map((time, index) => `${time} `)
+              )
             )
           )
         );
