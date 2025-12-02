@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Homepage</title>
+  </head>
+  <body>
+    <!-- React will render its content inside this div -->
+    <div id="root"></div>
+
+    <!-- Load core React library from a CDN -->
+    <!-- interface to create and manage React components -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+
+    <!-- Load ReactDOM from a CDN -->
+    <!-- render layer that renders React components into the DOM -->
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <script src="data.js"></script>
+
+    <script>
+      function App() {
+        console.log("data:", data);
+
+        return React.createElement(
+          "div",
+          null,
+          data.map((stationTimeTable, index) =>
+            React.createElement(StationTimeTable, {
+              key: index,
+              stationTimeTable: stationTimeTable,
+            })
+          )
+        );
+      }
+
+      function StationTimeTable({ stationTimeTable }) {
+        const StationName = stationTimeTable.StationName.Zh_tw;
+        const DestinationStationName =
+          stationTimeTable.DestinationStationName.Zh_tw;
+
+        return React.createElement(
+          "div",
+          null,
+          React.createElement(
+            "h1",
+            null,
+            `臺北捷運 ${StationName}站往${DestinationStationName}站時刻表`
+          ),
+          React.createElement("p", null, `路線：${stationTimeTable.RouteID}`),
+          React.createElement("p", null, `起站：${StationName}`),
+          React.createElement("p", null, `迄站：${DestinationStationName}`),
+          React.createElement(TimetableSpan, {
+            serviceTag: stationTimeTable.ServiceDay.ServiceTag,
+            timetables: stationTimeTable.Timetables,
+          })
+        );
+      }
+
+      function TimetableList({ serviceTag, timetables }) {
+        console.log(`serviceTag: ${serviceTag}, timetables: ${timetables}`);
+
+        return React.createElement(
+          "div",
+          null,
+          React.createElement("h3", null, serviceTag),
+          timetables.map((timetable) =>
+            React.createElement(
+              "ul",
+              { key: timetable.Sequence },
+              React.createElement("li", null, timetable.ArrivalTime)
+            )
+          )
+        );
+      }
+
+      // 相同鐘點不同分鐘
+      function TimetableSpan({ serviceTag, timetables }) {
+        console.log(`serviceTag: ${serviceTag}, timetables: ${timetables}`);
+
+        // group by hour
+        const groupedByHour = timetables.reduce((acc, curr) => {
+          const hour = curr.ArrivalTime.split(":")[0];
+          if (!acc[hour]) {
+            acc[hour] = [];
+          }
+          acc[hour].push(curr.ArrivalTime);
+          console.log(`acc[${hour}]:`, acc[hour]);
+          return acc;
+        }, {});
+
+        console.log("groupedByHour:", groupedByHour);
+
+        return React.createElement(
+          "div",
+          null,
+          React.createElement("h3", null, serviceTag),
+          Object.entries(groupedByHour).map(([hour, times]) =>
+            React.createElement(
+              "p",
+              null,
+              times.map((time, index) => `${time} `)
+            )
+          )
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(React.createElement(App));
+    </script>
+  </body>
+</html>
