@@ -26,8 +26,6 @@
 
     <script>
       function App() {
-        console.log("data:", data);
-
         return React.createElement(
           "div",
           null,
@@ -71,39 +69,16 @@
         );
       }
 
-      function TimetableList({ serviceTag, timetables }) {
-        console.log(`serviceTag: ${serviceTag}, timetables: ${timetables}`);
-
-        return React.createElement(
-          "div",
-          null,
-          React.createElement("h3", null, serviceTag),
-          timetables.map((timetable) =>
-            React.createElement(
-              "ul",
-              { key: timetable.Sequence },
-              React.createElement("li", null, timetable.ArrivalTime)
-            )
-          )
-        );
-      }
-
-      // 相同鐘點不同分鐘
+      // group by hour
       function TimetableSpan({ serviceTag, timetables }) {
-        console.log(`serviceTag: ${serviceTag}, timetables: ${timetables}`);
-
-        // group by hour
         const groupedByHour = timetables.reduce((acc, curr) => {
           const hour = curr.ArrivalTime.split(":")[0];
           if (!acc[hour]) {
             acc[hour] = [];
           }
           acc[hour].push(curr.ArrivalTime);
-          console.log(`acc[${hour}]:`, acc[hour]);
           return acc;
         }, {});
-
-        console.log("groupedByHour:", groupedByHour);
 
         return React.createElement(
           "div",
