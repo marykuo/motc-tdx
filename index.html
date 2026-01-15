@@ -26,16 +26,117 @@
 
     <script>
       function App() {
+        const [LineID, setLineID] = React.useState("G");
+        const [startStationName, setStartStationName] =
+          React.useState(undefined);
+        const [destStationName, setDestStationName] = React.useState(undefined);
+        const [serviceTag, setServiceTag] = React.useState(undefined);
+
+        const targetLineData = data.filter(
+          (item) =>
+            item.LineID === LineID &&
+            (!startStationName ||
+              item.StationName.Zh_tw === startStationName) &&
+            (!destStationName ||
+              item.DestinationStationName.Zh_tw === destStationName) &&
+            (!serviceTag || item.ServiceDay.ServiceTag === serviceTag)
+        );
+        const startStationNameSet = [
+          ...new Set(targetLineData.map((item) => item.StationName.Zh_tw)),
+        ];
+        const destinationStationNameSet = [
+          ...new Set(
+            targetLineData.map((item) => item.DestinationStationName.Zh_tw)
+          ),
+        ];
+        const serviceTagSet = [
+          ...new Set(targetLineData.map((item) => item.ServiceDay.ServiceTag)),
+        ];
+
         return React.createElement(
           "div",
           null,
-          data.map((stationTimeTable, index) =>
+          React.createElement("span", null, "選擇路線："),
+          React.createElement(
+            Button,
+            {
+              onClick: () => setLineID("G"),
+            },
+            "松山新店線"
+          ),
+          React.createElement(
+            Button,
+            {
+              onClick: () => setLineID("R"),
+            },
+            "淡水信義線"
+          ),
+          React.createElement(
+            Button,
+            {
+              onClick: () => setLineID("B"),
+            },
+            "板南線"
+          ),
+          React.createElement("br", null),
+          React.createElement("span", null, "選擇起站："),
+          startStationNameSet.map((stationName) =>
+            React.createElement(
+              Button,
+              {
+                key: stationName,
+                onClick: () => setStartStationName(stationName),
+              },
+              stationName
+            )
+          ),
+          React.createElement("br", null),
+          React.createElement("span", null, "選擇迄站："),
+          destinationStationNameSet.map((stationName) =>
+            React.createElement(
+              Button,
+              {
+                key: stationName,
+                onClick: () => setDestStationName(stationName),
+              },
+              stationName
+            )
+          ),
+          React.createElement("br", null),
+          React.createElement("span", null, "服務類別："),
+          serviceTagSet.map((tag) =>
+            React.createElement(
+              Button,
+              {
+                key: tag,
+                onClick: () => setServiceTag(tag),
+              },
+              tag
+            )
+          ),
+          React.createElement("br", null),
+          React.createElement(
+            "button",
+            {
+              onClick: () => {
+                setStartStationName(undefined);
+                setDestStationName(undefined);
+                setServiceTag(undefined);
+              },
+            },
+            "清除篩選條件"
+          ),
+          targetLineData.map((stationTimeTable, index) =>
             React.createElement(StationTimeTable, {
               key: index,
               stationTimeTable: stationTimeTable,
             })
           )
         );
+      }
+
+      function Button({ onClick, children }) {
+        return React.createElement("button", { onClick: onClick }, children);
       }
 
       function StationTimeTable({ stationTimeTable }) {
