@@ -173,7 +173,7 @@
       // group by hour
       function TimetableSpan({ serviceTag, timetables }) {
         const groupedByHour = timetables.reduce((acc, curr) => {
-          const hour = curr.ArrivalTime.split(":")[0];
+          const hour = Number(curr.ArrivalTime.split(":")[0]);
           if (!acc[hour]) {
             acc[hour] = [];
           }
@@ -191,7 +191,7 @@
             Object.entries(groupedByHour).map(([hour, times]) =>
               React.createElement(
                 "p",
-                null,
+                { key: hour },
                 times.map((time, index) => `${time} `)
               )
             )
