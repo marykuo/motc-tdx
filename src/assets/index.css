@@ -1,20 +1,37 @@
+:root {
+  --color-gray-light: #ddd;
+  --color-gray: #333;
+  --color-gray-dark: #444;
+
+  --color-blue-light: #e7f3ff;
+  --color-blue: #007bff;
+}
+
 .sidebar {
   width: 250px;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--color-gray-light);
   padding: 1rem;
 }
 
 .sidebar-homepage {
   padding-left: 10px;
-  color: #333;
+  color: var(--color-gray);
   text-decoration: none;
+}
+
+.sidebar-homepage:hover {
+  color: var(--color-blue);
 }
 
 .sidebar-item {
   padding: 8px 12px;
   display: block;
   text-decoration: none;
-  color: #444;
+  color: var(--color-gray-dark);
   cursor: pointer;
   font-size: 0.95rem;
+}
+
+.sidebar-item:hover {
+  color: var(--color-blue);
 }

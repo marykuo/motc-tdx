@@ -11,14 +11,16 @@ function HomepageLink() {
 }
 
 function SidebarItem({ path, title }) {
+  const activeStyle = {
+    backgroundColor: "var(--color-blue-light)",
+    color: "var(--color-blue)",
+  };
+
   return (
     <NavLink
       to={path}
       className="sidebar-item"
-      style={({ isActive }) => ({
-        backgroundColor: isActive ? "#e7f3ff" : "transparent",
-        color: isActive ? "#007bff" : "#555",
-      })}
+      style={({ isActive }) => (isActive ? activeStyle : undefined)}
     >
       {title}
     </NavLink>
