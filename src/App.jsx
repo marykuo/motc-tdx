@@ -1,19 +1,42 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
 import StationTimeTable from "./pages/StationTimeTable";
 
 function App() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
   return (
     <Router>
-      <div style={{ display: "flex", minHeight: "100vh" }}>
+      <div className="app-container">
+        {/* Mobile Toggle Button */}
+        <button className="hamburger-btn" onClick={toggleSidebar}>
+          ☰
+        </button>
+
+        {/* Overlay for mobile when sidebar is open */}
+        {isSidebarOpen && (
+          <div className="sidebar-overlay" onClick={closeSidebar}></div>
+        )}
+
         {/* 左方固定導覽列 */}
-        <nav className="sidebar">
-          <Sidebar />
+        <nav className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
+          <div onClick={closeSidebar}>
+            <Sidebar />
+          </div>
         </nav>
 
         {/* 右側動態內容區 */}
-        <main style={{ flex: 1, padding: "2rem" }}>
+        <main className="main-content">
           <Routes>
             {/* root route */}
             <Route path="/" element={<Home />} />
