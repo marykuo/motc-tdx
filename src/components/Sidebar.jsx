@@ -27,12 +27,20 @@ function SidebarItem({ path, title }) {
   );
 }
 
+export function SidebarItems() {
+  return (
+    <>
+      <SidebarItem path="/rail/metro/station-time-table" title="捷運時刻表" />
+    </>
+  );
+}
+
 function Sidebar() {
   return (
     <aside>
       <HomepageLink />
       <hr />
-      <SidebarItem path="/rail/metro/station-time-table" title="捷運時刻表" />
+      <SidebarItems />
     </aside>
   );
 }
