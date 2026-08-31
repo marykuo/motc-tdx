@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 
 function HomepageLink() {
   return (
@@ -32,10 +32,7 @@ function Sidebar() {
     <aside>
       <HomepageLink />
       <hr />
-      <SidebarItem
-        path="/motc-tdx/rail/metro/station-time-table"
-        title="捷運時刻表"
-      />
+      <SidebarItem path="/rail/metro/station-time-table" title="捷運時刻表" />
     </aside>
   );
 }

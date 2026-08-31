@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router";
 import { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
@@ -16,7 +16,7 @@ function App() {
   };
 
   return (
-    <Router>
+    <Router basename="/motc-tdx">
       <div className="app-container">
         {/* Mobile Toggle Button */}
         <button className="hamburger-btn" onClick={toggleSidebar}>
@@ -42,7 +42,7 @@ function App() {
             <Route path="/" element={<Home />} />
             {/* routes */}
             <Route
-              path="/motc-tdx/rail/metro/station-time-table"
+              path="/rail/metro/station-time-table"
               element={<StationTimeTable />}
             />
             {/* catch-all route for undefined paths */}
