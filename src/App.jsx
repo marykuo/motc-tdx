@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { HashRouter, Routes, Route } from "react-router";
 import { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
@@ -16,7 +16,7 @@ function App() {
   };
 
   return (
-    <Router basename="/motc-tdx">
+    <HashRouter>
       <div className="app-container">
         {/* Mobile Toggle Button */}
         <button className="hamburger-btn" onClick={toggleSidebar}>
@@ -50,7 +50,7 @@ function App() {
           </Routes>
         </main>
       </div>
-    </Router>
+    </HashRouter>
   );
 }
 
