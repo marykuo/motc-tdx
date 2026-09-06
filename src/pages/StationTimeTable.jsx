@@ -118,11 +118,18 @@ function StationTimeTable() {
     };
   });
 
-  const matchingTimetables = startStationTimetables.filter(
-    (timetable) =>
-      timetable.DestinationStaionID === endStationID &&
-      timetable.ServiceTag === serviceTag,
-  );
+  const matchingTimetables = startStationTimetables
+    .filter(
+      (timetable) =>
+        timetable.DestinationStaionID === endStationID &&
+        (!serviceTag || timetable.ServiceTag === serviceTag),
+    )
+    // serviceTag '平日' should always at first
+    .sort((a, b) => {
+      if (a.ServiceTag === "平日" && b.ServiceTag !== "平日") return -1;
+      if (a.ServiceTag !== "平日" && b.ServiceTag === "平日") return 1;
+      return 0;
+    });
 
   const serviceTags = [
     ...new Set(
@@ -207,6 +214,14 @@ function StationTimeTable() {
 
       <div>
         <span>服務類別：</span>
+        <button
+          type="button"
+          onClick={() => setServiceTag("")}
+          aria-pressed={serviceTag === ""}
+          disabled={!endStationID}
+        >
+          全部
+        </button>
         {serviceTags.map((tag) => (
           <button
             key={tag}
@@ -223,7 +238,7 @@ function StationTimeTable() {
       {isLoading && <p>資料載入中...</p>}
       {error && <p role="alert">{error}</p>}
       {!isLoading && !error && matchingTimetables.length === 0 && (
-        <p>請依序選擇起站、迄站與服務類別。</p>
+        <p>請依序選擇起站與迄站。</p>
       )}
 
       {matchingTimetables.map((timetable) => (
