@@ -242,27 +242,25 @@ function StationTimeTable() {
       )}
 
       {matchingTimetables.map((timetable) => (
-        <>
+        <section key={`${timetable.RouteID}-${timetable.ServiceTag}`}>
           <hr />
-          <section key={`${timetable.RouteID}-${timetable.ServiceTag}`}>
-            <h2>
-              {railSystemDisplay} {selectedStartStation?.StationName?.Zh_tw}往
-              {selectedEndStation?.StationName?.Zh_tw} 時刻表
-            </h2>
-            <ul>
-              <li>起站：{timetable.StationName.Zh_tw}站</li>
-              <li>迄站：{timetable.DestinationStationName.Zh_tw}站</li>
-            </ul>
-            <h3>{timetable.ServiceTag}</h3>
-            <div style={{ marginLeft: "20px" }}>
-              {[...groupTimetablesByHour(timetable.Timetables)].map(
-                ([hour, timetableEntries]) => (
-                  <p key={hour}>{timetableEntries.join(" ")}</p>
-                ),
-              )}
-            </div>
-          </section>
-        </>
+          <h2>
+            {railSystemDisplay} {selectedStartStation?.StationName?.Zh_tw}往
+            {selectedEndStation?.StationName?.Zh_tw} 時刻表
+          </h2>
+          <ul>
+            <li>起站：{timetable.StationName.Zh_tw}站</li>
+            <li>迄站：{timetable.DestinationStationName.Zh_tw}站</li>
+          </ul>
+          <h3>{timetable.ServiceTag}</h3>
+          <div style={{ marginLeft: "20px" }}>
+            {[...groupTimetablesByHour(timetable.Timetables)].map(
+              ([hour, timetableEntries]) => (
+                <p key={hour}>{timetableEntries.join(" ")}</p>
+              ),
+            )}
+          </div>
+        </section>
       ))}
     </>
   );
