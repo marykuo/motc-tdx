@@ -1,14 +1,144 @@
 import { useSearchParams } from "react-router";
+import { useState, useEffect } from "react";
+
+function flattenRecords(data) {
+  return data.flat();
+}
+
+function groupTimetablesByHour(timetableEntries) {
+  return timetableEntries.reduce((groups, timetableEntry) => {
+    const hour = timetableEntry.split(":")[0];
+    const entriesForHour = groups.get(hour) || [];
+
+    entriesForHour.push(timetableEntry);
+    groups.set(hour, entriesForHour);
+
+    return groups;
+  }, new Map());
+}
 
 function StationTimeTable() {
+  // system initial
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // load data from files
+  const [stations, setStations] = useState([]);
+  const [timetables, setTimetables] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // user choose
+  const [lineID, setLineID] = useState("G");
+  const [startStationID, setStartStationID] = useState("G-2");
+  const [endStationID, setEndStationID] = useState("G-19");
+  const [serviceTag, setServiceTag] = useState("");
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [stationsResponse, timetablesResponse] = await Promise.all([
+          fetch("/motc-tdx/TRTC-stations.json"),
+          fetch("/motc-tdx/TRTC-station-timetables.json"),
+        ]);
+
+        if (!stationsResponse.ok || !timetablesResponse.ok) {
+          throw new Error("無法載入捷運資料");
+        }
+
+        const [stationData, timetableData] = await Promise.all([
+          stationsResponse.json(),
+          timetablesResponse.json(),
+        ]);
+
+        setStations(flattenRecords(stationData));
+        setTimetables(flattenRecords(timetableData));
+      } catch (loadError) {
+        setError(loadError.message || "無法載入捷運資料");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadData();
+  }, []);
+
   // Read query parameters
-  const railSystem = searchParams.get("RailSystem") || "trtc";
-  const railSystemDisplay = railSystem === "trtc" ? "臺北捷運" : "其他捷運系統";
+  const railSystem = searchParams.get("RailSystem") || "TRTC";
+  const railSystemDisplay = railSystem === "TRTC" ? "臺北捷運" : "其他捷運系統";
 
   function handleRailSystemChange(newSystem) {
     setSearchParams({ RailSystem: newSystem });
+  }
+
+  function handleLineIDChange(newLineID) {
+    setLineID(newLineID);
+    setStartStationID("");
+    setEndStationID("");
+    setServiceTag("");
+  }
+
+  const lineStations = stations.filter((station) =>
+    station.StationID.startsWith(lineID),
+  );
+
+  const startStationTimetables = timetables.filter(
+    (timetable) =>
+      timetable.LineID === lineID && timetable.StationID === startStationID,
+  );
+
+  const destinationIDs = [
+    ...new Set(
+      startStationTimetables.map((timetable) => timetable.DestinationStaionID),
+    ),
+  ];
+
+  const destinationStations = destinationIDs.map((destinationID) => {
+    const station = stations.find(
+      (candidate) => candidate.StationID === destinationID,
+    );
+    const timetable = startStationTimetables.find(
+      (candidate) => candidate.DestinationStaionID === destinationID,
+    );
+
+    return {
+      id: destinationID,
+      name:
+        station?.StationName?.Zh_tw ||
+        timetable?.DestinationStationName?.Zh_tw ||
+        destinationID,
+    };
+  });
+
+  const matchingTimetables = startStationTimetables.filter(
+    (timetable) =>
+      timetable.DestinationStaionID === endStationID &&
+      timetable.ServiceTag === serviceTag,
+  );
+
+  const serviceTags = [
+    ...new Set(
+      startStationTimetables
+        .filter((timetable) => timetable.DestinationStaionID === endStationID)
+        .map((timetable) => timetable.ServiceTag),
+    ),
+  ];
+
+  const selectedStartStation = lineStations.find(
+    (station) => station.StationID === startStationID,
+  );
+  const selectedEndStation = stations.find(
+    (station) => station.StationID === endStationID,
+  );
+
+  function handleStartStationChange(newStartStationID) {
+    setStartStationID(newStartStationID);
+    setEndStationID("");
+    setServiceTag("");
+  }
+
+  function handleEndStationChange(newEndStationID) {
+    setEndStationID(newEndStationID);
+    setServiceTag("");
   }
 
   return (
@@ -17,57 +147,92 @@ function StationTimeTable() {
 
       <div>
         <span>捷運系統：</span>
-        <button onClick={() => handleRailSystemChange("trtc")}>TRTC</button>
+        <button onClick={() => handleRailSystemChange("TRTC")}>TRTC</button>
         <button onClick={() => handleRailSystemChange("other")}>Other</button>
       </div>
 
       <div>
         <span>選擇路線：</span>
-        <button>松山新店線</button>
-        <button>淡水信義線</button>
-        <button>板南線</button>
+        <button onClick={() => handleLineIDChange("BR")}>文湖線</button>
+        <button onClick={() => handleLineIDChange("R")}>淡水信義線</button>
+        <button onClick={() => handleLineIDChange("G")}>松山新店線</button>
+        <button onClick={() => handleLineIDChange("O")}>中和新蘆線</button>
+        <button onClick={() => handleLineIDChange("BL")}>板南線</button>
       </div>
 
       <div>
         <span>選擇起站：</span>
-        <button>新店</button>
-        <button>松山</button>
-        <button>台電大樓</button>
+        {lineStations.map((station) => (
+          <button
+            key={station.StationID}
+            type="button"
+            onClick={() => handleStartStationChange(station.StationID)}
+            aria-pressed={startStationID === station.StationID}
+          >
+            {station.StationID} {station.StationName.Zh_tw}
+          </button>
+        ))}
       </div>
 
       <div>
         <span>選擇迄站：</span>
-        <button>松山</button>
-        <button>新店</button>
-        <button>台電大樓</button>
+        {destinationStations.map((station) => (
+          <button
+            key={station.id}
+            type="button"
+            onClick={() => handleEndStationChange(station.id)}
+            aria-pressed={endStationID === station.id}
+            disabled={!startStationID}
+          >
+            {station.id} {station.name}
+          </button>
+        ))}
       </div>
 
       <div>
         <span>服務類別：</span>
-        <button>平日</button>
-        <button>假日</button>
+        {serviceTags.map((tag) => (
+          <button
+            key={tag}
+            type="button"
+            onClick={() => setServiceTag(tag)}
+            aria-pressed={serviceTag === tag}
+            disabled={!endStationID}
+          >
+            {tag}
+          </button>
+        ))}
       </div>
 
-      <hr />
+      {isLoading && <p>資料載入中...</p>}
+      {error && <p role="alert">{error}</p>}
+      {!isLoading && !error && matchingTimetables.length === 0 && (
+        <p>請依序選擇起站、迄站與服務類別。</p>
+      )}
 
-      <h2>{railSystemDisplay} 台電大樓往松山站 時刻表</h2>
-      <ul>
-        <li>路線：G-2</li>
-        <li>起站：台電大樓站</li>
-        <li>迄站：松山站</li>
-      </ul>
-
-      <div>
-        <h3>平日</h3>
-        <div style={{ marginLeft: "20px" }}>
-          <p>07:16 07:28 07:40 07:52 </p>
-          <p>08:04 08:16 08:28 08:40 08:52 </p>
-          <p>09:04 </p>
-          <p>17:03 17:16 17:28 17:42 17:55 </p>
-          <p>18:07 18:20 18:33 18:45 18:58 </p>
-          <p>19:11 </p>
-        </div>
-      </div>
+      {matchingTimetables.map((timetable) => (
+        <>
+          <hr />
+          <section key={`${timetable.RouteID}-${timetable.ServiceTag}`}>
+            <h2>
+              {railSystemDisplay} {selectedStartStation?.StationName?.Zh_tw}往
+              {selectedEndStation?.StationName?.Zh_tw} 時刻表
+            </h2>
+            <ul>
+              <li>起站：{timetable.StationName.Zh_tw}站</li>
+              <li>迄站：{timetable.DestinationStationName.Zh_tw}站</li>
+            </ul>
+            <h3>{timetable.ServiceTag}</h3>
+            <div style={{ marginLeft: "20px" }}>
+              {[...groupTimetablesByHour(timetable.Timetables)].map(
+                ([hour, timetableEntries]) => (
+                  <p key={hour}>{timetableEntries.join(" ")}</p>
+                ),
+              )}
+            </div>
+          </section>
+        </>
+      ))}
     </>
   );
 }
