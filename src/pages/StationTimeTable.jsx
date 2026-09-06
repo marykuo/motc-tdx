@@ -29,9 +29,17 @@ function StationTimeTable() {
   const [error, setError] = useState("");
 
   // user choose
-  const [lineID, setLineID] = useState("G");
-  const [startStationID, setStartStationID] = useState("G-2");
-  const [endStationID, setEndStationID] = useState("G-19");
+  const [railSystem, setRailSystem] = useState(
+    searchParams.get("railSystem") || "TRTC",
+  );
+  const railSystemDisplay = railSystem === "TRTC" ? "臺北捷運" : "其他捷運系統";
+  const [lineID, setLineID] = useState(searchParams.get("lineID") || "");
+  const [startStationID, setStartStationID] = useState(
+    searchParams.get("startStationID") || "",
+  );
+  const [endStationID, setEndStationID] = useState(
+    searchParams.get("endStationID") || "",
+  );
   const [serviceTag, setServiceTag] = useState("");
 
   useEffect(() => {
@@ -71,23 +79,34 @@ function StationTimeTable() {
     loadData();
   }, []);
 
-  // Read query parameters
-  const railSystem = searchParams.get("RailSystem") || "TRTC";
-  const railSystemDisplay = railSystem === "TRTC" ? "臺北捷運" : "其他捷運系統";
+  function handleSearchParamsAppend(key, value) {
+    setSearchParams((prevParams) => {
+      // create a new instance from the old one to avoid direct mutation
+      const newParams = new URLSearchParams(prevParams);
+      newParams.set(key, value);
+      return newParams;
+    });
+  }
 
-  function handleRailSystemChange(newSystem) {
-    setSearchParams({ RailSystem: newSystem });
+  function handleRailSystemChange(newRailSystem) {
+    setSearchParams({ railSystem: newRailSystem });
+    setRailSystem(newRailSystem);
+    setLineID("");
+    setStartStationID("");
+    setEndStationID("");
+    setServiceTag("");
   }
 
   function handleLineIDChange(newLineID) {
+    handleSearchParamsAppend("lineID", newLineID);
     setLineID(newLineID);
     setStartStationID("");
     setEndStationID("");
     setServiceTag("");
   }
 
-  const lineStations = stations.filter((station) =>
-    station.StationID.startsWith(lineID),
+  const lineStations = stations.filter(
+    (station) => lineID && station.StationID.startsWith(lineID),
   );
 
   const startStationTimetables = timetables.filter(
@@ -147,12 +166,14 @@ function StationTimeTable() {
   );
 
   function handleStartStationChange(newStartStationID) {
+    handleSearchParamsAppend("startStationID", newStartStationID);
     setStartStationID(newStartStationID);
     setEndStationID("");
     setServiceTag("");
   }
 
   function handleEndStationChange(newEndStationID) {
+    handleSearchParamsAppend("endStationID", newEndStationID);
     setEndStationID(newEndStationID);
     setServiceTag("");
   }
