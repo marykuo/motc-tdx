@@ -22,6 +22,7 @@ function StationTimeTable() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // load data from files
+  const [lines, setLine] = useState([]);
   const [stations, setStations] = useState([]);
   const [timetables, setTimetables] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,20 +37,28 @@ function StationTimeTable() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [stationsResponse, timetablesResponse] = await Promise.all([
-          fetch("/motc-tdx/TRTC-stations.json"),
-          fetch("/motc-tdx/TRTC-station-timetables.json"),
-        ]);
+        const [linesResponse, stationsResponse, timetablesResponse] =
+          await Promise.all([
+            fetch("/motc-tdx/TRTC-lines.json"),
+            fetch("/motc-tdx/TRTC-stations.json"),
+            fetch("/motc-tdx/TRTC-station-timetables.json"),
+          ]);
 
-        if (!stationsResponse.ok || !timetablesResponse.ok) {
+        if (
+          !linesResponse.ok ||
+          !stationsResponse.ok ||
+          !timetablesResponse.ok
+        ) {
           throw new Error("無法載入捷運資料");
         }
 
-        const [stationData, timetableData] = await Promise.all([
+        const [lineData, stationData, timetableData] = await Promise.all([
+          linesResponse.json(),
           stationsResponse.json(),
           timetablesResponse.json(),
         ]);
 
+        setLine(flattenRecords(lineData));
         setStations(flattenRecords(stationData));
         setTimetables(flattenRecords(timetableData));
       } catch (loadError) {
@@ -153,11 +162,18 @@ function StationTimeTable() {
 
       <div>
         <span>選擇路線：</span>
-        <button onClick={() => handleLineIDChange("BR")}>文湖線</button>
-        <button onClick={() => handleLineIDChange("R")}>淡水信義線</button>
-        <button onClick={() => handleLineIDChange("G")}>松山新店線</button>
-        <button onClick={() => handleLineIDChange("O")}>中和新蘆線</button>
-        <button onClick={() => handleLineIDChange("BL")}>板南線</button>
+        {lines.map((line) => (
+          <button
+            key={line.LineID}
+            onClick={() => handleLineIDChange(line.LineID)}
+            style={{
+              backgroundColor: line.LineColor,
+              color: "#fff",
+            }}
+          >
+            {line.LineName.Zh_tw}
+          </button>
+        ))}
       </div>
 
       <div>
